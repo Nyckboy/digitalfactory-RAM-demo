@@ -38,7 +38,7 @@ export interface TaskDTO {
   status: TaskStatus;
   deadline: string;
   projectId: string;
-  assignedTo: UserDTO;
+  assignedTo: UserDTO | null;
   submissionUrl?: string | null; 
 }
 

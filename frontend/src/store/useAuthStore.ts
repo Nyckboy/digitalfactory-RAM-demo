@@ -1,29 +1,23 @@
 import { create } from 'zustand';
 import type { User } from '../types/auth';
-
-interface AuthState {
-  token: string | null;
-  user: User | null;
-  isAuthenticated: boolean;
-  login: (token: string, user: User) => void;
-  logout: () => void;
+import { personas } from '../demo/data';
+const KEY = 'digitalfactory-demo-role';
+function initialUser(): User | null {
+  try { return personas.find(p => p.role === sessionStorage.getItem(KEY)) || null; } catch { return null; }
 }
-
-export const useAuthStore = create<AuthState>((set) => ({
-  // Initialize from localStorage in case the user refreshes the page
-  token: localStorage.getItem('jwt_token'),
-  user: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') as string) : null,
-  isAuthenticated: !!localStorage.getItem('jwt_token'),
-
-  login: (token, user) => {
-    localStorage.setItem('jwt_token', token);
-    localStorage.setItem('user', JSON.stringify(user));
-    set({ token, user, isAuthenticated: true });
+const user = initialUser();
+interface AuthState {
+  token: string | null; user: User | null; isAuthenticated: boolean;
+  login: (token: string, user: User) => void; logout: () => void;
+}
+export const useAuthStore = create<AuthState>(set => ({
+  token: user ? 'demo-local' : null, user, isAuthenticated: !!user,
+  login: (_token, user) => {
+    try { sessionStorage.setItem(KEY, user.role); } catch { /* In-memory session. */ }
+    set({ token: 'demo-local', user, isAuthenticated: true });
   },
-
   logout: () => {
-    localStorage.removeItem('jwt_token');
-    localStorage.removeItem('user');
+    try { sessionStorage.removeItem(KEY); } catch { /* In-memory session. */ }
     set({ token: null, user: null, isAuthenticated: false });
   },
 }));

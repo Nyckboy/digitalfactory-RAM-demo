@@ -14,6 +14,7 @@ import { SupervisorTeamView } from "./pages/supervisor/SupervisorTeamView";
 import { InternLayout } from "./pages/intern/InternLayout";
 import { InternTaskBoard } from "./pages/intern/InternTaskBoard";
 import { NotificationProvider } from "./context/NotificationContext";
+import { DemoToolbar } from "./demo/DemoToolbar";
 import { Toaster } from "sonner";
 
 const router = createBrowserRouter([
@@ -90,7 +91,8 @@ export default function App() {
   return (
     <NotificationProvider>
       <Toaster richColors position="top-right" />
-      <RouterProvider router={router} />
+      <div className="pb-24"><RouterProvider router={router} /></div>
+      <DemoToolbar />
     </NotificationProvider>
   );
 }

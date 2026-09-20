@@ -1,244 +1,62 @@
-# Digital Factory — Project & Internship Management
+# Digital Factory - Portfolio Demo
 
-A full-stack application for organizing projects, coordinating supervisors and interns, and following work from assignment to review. Digital Factory brings role-specific dashboards, task discussions, deliverable links, live notifications, and AI-assisted project planning into one workspace.
+A browser-only, interactive companion to the [full application](https://github.com/Nyckboy/digitalfactory-RAM). This standalone repository is intended to remain private; the built site can be public.
 
-## Features
+## Try it locally
 
-| Role | Workspace capabilities |
-| --- | --- |
-| Super admin | Manage users and projects, assign supervisors, view dashboard statistics and recent activity, and generate project drafts with AI. |
-| Supervisor | View assigned projects, create and assign tasks, track progress, discuss work, and browse the team directory. |
-| Intern | View assigned tasks, update progress, submit deliverable links, participate in task discussions, and track work from a personal dashboard. |
-
-- **Task workflow:** `TODO` → `IN_PROGRESS` → `IN_REVIEW` → `COMPLETED`.
-- **AI-assisted planning:** turn a project idea into a draft with suggested tasks, then review and confirm it before saving.
-- **Live notifications:** STOMP over WebSocket, with unread notification retrieval and mark-as-read actions.
-- **Authentication:** JWT-based login, BCrypt password hashing, and role-based API access.
-- **Delivery pipeline:** Jenkins builds, dependency and image scans, SonarQube analysis, and Docker deployment.
-
-## Technology
-
-| Layer | Tools |
-| --- | --- |
-| Frontend | React, TypeScript, Vite, Tailwind CSS, React Router, Zustand, Axios |
-| Backend | Java 21, Spring Boot, Spring Security, Spring Data JPA, Lombok |
-| Database | PostgreSQL; H2 for the Spring context test |
-| Real-time messaging | Spring WebSocket, STOMP |
-| AI integration | Configurable chat-completions HTTP endpoint |
-| Build and delivery | pnpm, Maven, Docker, Nginx, Jenkins |
-| Quality tooling | Oxlint, JaCoCo, SonarQube, OWASP Dependency-Check, Gitleaks, Trivy |
-
-Dependency versions are defined in [frontend/package.json](frontend/package.json) and [backend/pom.xml](backend/pom.xml).
-
-## Repository structure
-
-```text
-backend/
-  src/main/java/com/digitalfactory/platform/
-    config/         Spring, security, and WebSocket configuration
-    controller/     REST endpoints
-    dto/            Request and response models
-    model/          Persistence entities and enums
-    repository/     Database access
-    security/       JWT authentication
-    service/        Application logic
-  src/main/resources/application.yml
-  src/test/         Spring application-context test
-  Dockerfile
-  pom.xml
-frontend/
-  src/
-    components/     Shared UI components
-    context/        Notification context
-    lib/            API client and shared utilities
-    pages/          Admin, supervisor, intern, and login screens
-    store/          Client state
-    types/          TypeScript models
-  Dockerfile
-  nginx.conf
-  package.json
-Jenkinsfile
-```
-
-## Run locally
-
-### Prerequisites
-
-- JDK 21, with `JAVA_HOME` pointing to that installation.
-- Node.js 22.12 or newer and pnpm installed.
-- PostgreSQL running locally, with a database and user you can access.
-- Maven, or the included Maven wrapper.
-- An accessible chat-completions endpoint and its credentials to use AI drafting.
-
-### 1. Get the code and create the database
-
-```sh
-git clone https://github.com/Nyckboy/digitalfactory-RAM.git
-cd digitalfactory-RAM
-```
-
-In PostgreSQL, create a database using your database administration tool or SQL console:
-
-```sql
-CREATE DATABASE digitalfactory;
-```
-
-The configured database user needs permission to create and update tables in this database. The development configuration uses Hibernate's `ddl-auto: update` to manage tables when the backend starts.
-
-### 2. Configure the backend
-
-The tracked [application.yml](backend/src/main/resources/application.yml) activates the `local` profile by default. Create `backend/src/main/resources/application-local.yml`, which is excluded from Git, with your local values:
-
-```yaml
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/digitalfactory
-    username: "YOUR_DATABASE_USER"
-    password: "YOUR_DATABASE_PASSWORD"
-
-application:
-  security:
-    jwt:
-      secret-key: "YOUR_BASE64_ENCODED_RANDOM_SECRET"
-
-ai:
-  api:
-    url: "http://localhost:3002/v1/chat/completions"
-    key: "YOUR_AI_API_KEY"
-  model: "YOUR_MODEL_NAME"
-```
-
-Generate a JWT secret containing 32 random bytes, encoded as Base64, with:
-
-```sh
-node -e "console.log(require('node:crypto').randomBytes(32).toString('base64'))"
-```
-
-Use the output for `secret-key`. Replace the AI URL, key, and model with values for your provider. These AI configuration properties must be present for application startup; the provider is contacted when an AI action is invoked. The example endpoint is not included in this repository.
-
-The shared configuration sets token expiry to 24 hours. A standalone `backend/.env` file is not automatically loaded by the tracked configuration.
-
-### 3. Start the backend
-
-From `backend/`, on Windows PowerShell:
-
-```powershell
-.\mvnw.cmd spring-boot:run
-```
-
-On macOS or Linux:
-
-```sh
-sh ./mvnw spring-boot:run
-```
-
-Alternatively, use `mvn spring-boot:run` with an installed Maven. The backend listens on `http://localhost:8080` by default.
-
-### 4. Provision the first admin
-
-There is no public registration endpoint or automatic admin seed. A fresh database needs an initial active user with role `SUPER_ADMIN` before you can sign in and create additional users through the admin interface.
-
-After the backend has created the tables, provision that user in the `users` table using your database administration tool. Supply a UUID, first and last name, email, a **BCrypt-encoded password** in `password_hash`, role `SUPER_ADMIN`, and `is_active = true`. Do not store a plaintext password. Use Spring Security's `BCryptPasswordEncoder` or a trusted local BCrypt tool to generate the hash.
-
-### 5. Start the frontend
-
-In a second terminal, from the repository root:
+Requires Node.js 22.18+ (for the TypeScript test runner), or a newer supported Node release, and pnpm.
 
 ```sh
 cd frontend
 pnpm install --frozen-lockfile
+pnpm test
 pnpm dev
 ```
 
-Open `http://localhost:5173` and sign in with the account you provisioned.
+Choose Admin, Supervisor, or Intern on the entry screen. All people, projects, tasks, and notifications are fictional. Switch roles with the persistent demo controls. Changes persist within the browser tab using session storage, with an in-memory fallback if storage is unavailable. Reset restores the seed data. Do not enter real personal information.
 
-The frontend defaults to the local backend. To override its addresses, create `frontend/.env.local`:
+## What works
 
-```dotenv
-VITE_API_BASE_URL=http://localhost:8080/api
-VITE_API_SOCKET_URL=ws://localhost:8080/ws/websocket
+- Admin: browse and manage sample users/projects, dashboard statistics, activity, and simulated AI drafts.
+- Supervisor: view projects and team members, create/edit/delete tasks, review submissions, and add comments.
+- Intern: view assigned tasks, update progress, attach a deliverable URL, and discuss work.
+- Notifications: local events and read/unread state.
+- Role switching and reset without registration or real JWTs.
+
+The three built-in personas cannot be edited or deleted, so navigation between roles remains available. Other user records can be edited or removed when unassigned. Demo data is capped to keep the session small.
+
+AI drafts are deterministic local examples, not calls to a model. Deliverables are links, not file uploads. There is no email delivery or real account creation.
+
+## Isolation from the full app
+
+The frontend Axios client has only a custom in-memory adapter. It does not read API endpoint environment variables, fall back to HTTP, or open WebSocket connections. Unsupported API operations fail locally. Authentication stores only a selected demo role, using separate storage keys. Passwords entered in sample user forms are discarded.
+
+The Nginx configuration serves static files and has no API proxy. Application data never leaves the browser through the demo API. Existing visual assets may still load from external image/font services; source-code and deliverable links navigate to external sites.
+
+The backend source remains in this repository's inherited history/current tree for reference, but the demo does not build, run, or deploy it. No local application configuration, .env files, Maven outputs, or production credentials were copied. Production deployment commands have been removed from the demo Jenkinsfile.
+
+## Build and host
+
+```sh
+cd frontend
+pnpm test
+pnpm build
 ```
 
-Restart Vite after changing these values. They are embedded at build time for a production build. Keep credentials out of `VITE_*` variables because those values are exposed to the browser.
+Publish `frontend/dist` using a static host. Configure an SPA fallback to `index.html` for deep links; a Netlify-style `_redirects` file is included. No API credentials or backend service are required. The existing frontend Dockerfile can also package a prebuilt `dist` with the demo Nginx configuration.
 
-The backend's current CORS configuration allows `http://localhost:5173`. If Vite selects another port, free port 5173 or update the allowed origin in `SecurityConfig.java`.
+No public site has been deployed yet.
 
-## Typical workflow
+## Optional Jenkins job
 
-1. An admin creates supervisor and intern accounts.
-2. The admin creates a project and assigns a supervisor, optionally starting from an AI-generated draft.
-3. The supervisor creates tasks and assigns them to interns.
-4. Interns update their tasks, discuss work, and attach deliverable URLs for review.
-5. Supervisors follow progress and review work; dashboards and notifications help participants keep track of changes.
+Create a **separate** job for this repository. The pipeline defaults to `BUILD` and archives the static build. Configure a NodeJS tool named `Node22` providing Node 22.18+ and pnpm.
 
-## API overview
+`START` and `STOP` control only an already-provisioned container named `digitalfactory-demo` on that agent's Docker host. They never target the full app's `backend` or `frontend` containers. The job does not provision or deploy a container automatically; select the hosting method first. If the job uses several agents, pin it to the one running the demo container.
 
-| Route | Purpose | Access |
-| --- | --- | --- |
-| `POST /api/auth/login` | Authenticate and receive a JWT | Public |
-| `/api/admin/**` | Users, projects, statistics, activity, and AI drafting | `SUPER_ADMIN` |
-| `/api/supervisor/**` | Assigned projects, task management, comments, and team overview | `SUPERVISOR` |
-| `/api/intern/**` | Assigned tasks, progress updates, comments, and dashboard | `INTERN` |
-| `/api/notifications/**` | Unread notifications and read status | Authenticated users |
-| `/ws` | WebSocket/SockJS endpoint for STOMP messaging | See WebSocket configuration |
+The original app's Start/Stop helper is retained as historical source, but is not called by the demo pipeline.
 
-Authenticated REST requests use `Authorization: Bearer <token>`. Endpoint definitions live in the [controllers](backend/src/main/java/com/digitalfactory/platform/controller).
+## Verification
 
-## Build and checks
+`pnpm test` exercises the simulated workflow, role scoping, safe rejection of unsupported requests, notifications, reset seed independence, and password omission. `pnpm build` checks TypeScript and creates the static bundle.
 
-Run these commands from the corresponding directory:
-
-| Directory | Command | Purpose |
-| --- | --- | --- |
-| `frontend/` | `pnpm lint` | Run Oxlint |
-| `frontend/` | `pnpm build` | Type-check and build into `dist/` |
-| `frontend/` | `pnpm preview` | Preview the built frontend locally |
-| `backend/` | `mvn clean compile` | Compile the backend from scratch |
-| `backend/` | `mvn test` | Run the application-context test and JaCoCo reporting |
-| `backend/` | `mvn package` | Run tests and create the application JAR in `target/` |
-| `backend/` | `mvn verify` | Also run the bound OWASP dependency check |
-
-You can substitute the Maven wrapper for `mvn`. Use JDK 21 for the project toolchain. The current backend test checks Spring context startup with an H2 replacement database; it does not provide comprehensive feature coverage. Dependency scanning may require network access and vulnerability database configuration.
-
-## Deployment
-
-Both Dockerfiles package **existing build outputs**: build the backend JAR and frontend `dist/` directory before building images. The frontend is served by Nginx, whose configuration proxies `/api/` requests to `backend:8080`.
-
-For the backend's `prod` profile, configure:
-
-| Variable | Purpose |
-| --- | --- |
-| `SPRING_PROFILES_ACTIVE=prod` | Activate production configuration |
-| `DB_HOST`, `DB_PORT`, `DB_NAME` | PostgreSQL location and database |
-| `DB_USER`, `DB_PASSWORD` | Database credentials |
-| `JWT_SECRET` | Base64-encoded signing secret |
-| `AI_API_URL`, `AI_API_KEY` | AI endpoint and credentials |
-| `AI_MODEL` | Override the configured model when required |
-
-Set frontend API and WebSocket URLs before building. The included Nginx configuration only proxies the REST API; WebSocket connectivity needs a separately reachable backend URL or an added WebSocket proxy.
-
-The [Jenkins pipeline](Jenkinsfile) includes build/test stages, Gitleaks, dependency scans, SonarQube, Docker image builds, Trivy scans, and deployment. It references environment-specific tool installations, credentials, network settings, and addresses that must be adapted for another deployment.
-
-### Start and stop the app from Jenkins
-
-The pipeline has an `ACTION` selector in **Build with Parameters**:
-
-| Action | Result |
-| --- | --- |
-| `DEPLOY` (default) | Run the build, tests, scans, and deployment; replace the application containers with the new release. |
-| `STOP` | Stop the existing frontend and backend containers, preserving their configuration and the database. |
-| `START` | Restart those existing containers using the previously deployed images and configuration. |
-
-After pushing this Jenkinsfile, let Jenkins load it in one build so it registers the parameter. This first run defaults to `DEPLOY` and may redeploy the app. Then open the branch job (for example, `main`), select **Build with Parameters**, choose `STOP` or `START`, and click **Build**.
-
-Start and Stop check out the control script but skip compilation, tests, scans, deployment credentials, image builds, and image pruning. Both containers must already exist; if either is missing, the action fails before changing the other. The pipeline checks the running state of each container after the operation, not application HTTP readiness. A failed Docker operation is reported as a failed build and may leave a partial state; inspect the console output before retrying.
-
-The Jenkins agent must use the **same Docker host as deployment**. The current `agent any` assumes a single suitable agent; if Jenkins has several agents, pin this pipeline to the deployment agent's label. Builds of this job are serialized, so a Stop request waits for an active deployment to finish. This does not serialize other branch jobs or other pipelines targeting the same containers.
-
-Stopping the app does not disable automatic deployments. A later push or scheduled `DEPLOY` can bring it online again. Disable those triggers/job while it should stay offline, or keep deployment manual.
-
-The container names are centralized as `APP_BACKEND_CONTAINER` and `APP_FRONTEND_CONTAINER` in [Jenkinsfile](Jenkinsfile). The reusable [control script](ci/app-lifecycle.sh) accepts both names explicitly. When creating the demo, use a separate job and distinct container names, image tags, ports, and network/proxy configuration so its controls target only the demo. In particular, update the frontend Nginx backend hostname if renaming the backend container.
-
-Run the control-script tests without a Docker daemon using `python -m unittest discover -s ci -p "test_*.py"`. They require a POSIX shell; on Windows set `LIFECYCLE_TEST_SHELL` to your Git Bash executable path.
-
-This repository currently contains the full application. A restricted portfolio demo is not implemented yet.
+The demo is intentionally separate from production. Local test coverage does not substitute for reviewing the visitor experience in a browser before publishing.
