@@ -91,8 +91,10 @@ export default function App() {
   return (
     <NotificationProvider>
       <Toaster richColors position="top-right" />
-      <div className="pb-24"><RouterProvider router={router} /></div>
-      <DemoToolbar />
+      <div className="h-dvh grid grid-rows-[auto_minmax(0,1fr)] overflow-hidden bg-background font-sans">
+        <DemoToolbar />
+        <div className="min-h-0 min-w-0 overflow-y-auto"><RouterProvider router={router} /></div>
+      </div>
     </NotificationProvider>
   );
 }
