@@ -13,7 +13,7 @@ export const ProjectTaskBoard = () => {
   const location = useLocation();
 
   // Extract the project from the router state, or fallback to a basic object if directly accessed
-  const [project] = useState<ProjectDTO | null>(
+  const [project, setProject] = useState<ProjectDTO | null>(
     (location.state?.project as ProjectDTO) || null,
   );
 
@@ -43,14 +43,13 @@ export const ProjectTaskBoard = () => {
     if (!projectId) return;
     setIsLoading(true);
     try {
-      // Only fetch the tasks now, since we already have the project from router state
-      const response = await supervisorService.getProjectTasks(
-        projectId,
-        0,
-        100,
-      );
+      const [response, fetchedProject] = await Promise.all([
+        supervisorService.getProjectTasks(projectId, 0, 100),
+        supervisorService.getProject(projectId),
+      ]);
       setTasks(response.content);
-    } catch (err) {
+      setProject(fetchedProject);
+    } catch {
       setError("Failed to load project board data.");
     } finally {
       setIsLoading(false);
@@ -75,7 +74,7 @@ export const ProjectTaskBoard = () => {
         ...taskToUpdate,
         status: newStatus,
       });
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Failed to update task status", err);
       // Revert on failure
       fetchBoardData();
@@ -87,7 +86,7 @@ export const ProjectTaskBoard = () => {
     setTasks((prev) => prev.filter((t) => t.id !== taskId));
     try {
       await supervisorService.deleteTask(taskId);
-    } catch (err) {
+    } catch {
       fetchBoardData();
     }
   };
@@ -168,14 +167,7 @@ export const ProjectTaskBoard = () => {
     );
   if (error) return <div className="py-10 text-center text-error">{error}</div>;
 
-  // Fallback project object if navigating directly via URL without state
-  const activeProject =
-    project ||
-    ({
-      id: projectId,
-      title: "Project Board",
-      interns: [],
-    } as any as ProjectDTO);
+  if (!project) return <div className="py-10 text-center text-error">Project details are unavailable.</div>;
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)]">
@@ -185,13 +177,13 @@ export const ProjectTaskBoard = () => {
           setIsTaskModalOpen(false);
           fetchBoardData(); // Refresh the board after closing!
         }}
-        project={activeProject}
+        project={project}
       />
 
       <EditTaskModal
         isOpen={editModalOpen}
         taskId={editTaskId}
-        project={activeProject}
+        project={project}
         onClose={() => setEditModalOpen(false)}
         onSuccess={fetchBoardData}
       />
@@ -216,7 +208,7 @@ export const ProjectTaskBoard = () => {
           </button>
           <div>
             <h2 className="text-3xl font-bold text-on-background tracking-tight">
-              {activeProject.title}
+              {project.title}
             </h2>
             <p className="text-sm text-secondary mt-1">
               Oversee tasks and review intern deliverables.

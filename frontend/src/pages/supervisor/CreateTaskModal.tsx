@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supervisorService, type CreateTaskPayload } from "../../lib/supervisorApi";
+import { getErrorMessage } from "../../lib/errors";
 import type { ProjectDTO } from "../../types/api";
 
 interface CreateTaskModalProps {
@@ -49,8 +50,8 @@ export const CreateTaskModal = ({ isOpen, onClose, project }: CreateTaskModalPro
         setSuccessMsg(null);
         onClose();
       }, 1500);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to create task.");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Failed to create task."));
     } finally {
       setIsLoading(false);
     }

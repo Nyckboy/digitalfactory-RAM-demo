@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supervisorService } from "../../lib/supervisorApi";
+import { getErrorMessage } from "../../lib/errors";
 import type { UserDTO, TaskStatus, TaskDTO, ProjectDTO } from "../../types/api";
 
 interface EditTaskModalProps {
@@ -46,7 +47,7 @@ export const EditTaskModal = ({
           deadline: taskData.deadline ? taskData.deadline.slice(0, 16) : "",
           assignedToId: taskData.assignedTo?.id || "",
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Task fetch error:", err);
         setError(
           "Failed to load task details. Please ensure you have access to this project.",
@@ -86,8 +87,8 @@ export const EditTaskModal = ({
       await supervisorService.updateTask(taskId, payload);
       onSuccess();
       onClose();
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to update task.");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Failed to update task."));
     } finally {
       setIsSaving(false);
     }

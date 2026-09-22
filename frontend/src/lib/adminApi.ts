@@ -1,5 +1,5 @@
 import { api } from './api';
-import type { PaginatedResponse, UserDTO, ProjectDTO, DashboardStats, ActivityLog, AIDraftProject, ConfirmAIProjectPayload } from '../types/api';
+import type { PaginatedResponse, UserDTO, ProjectDTO, DashboardStats, ActivityLog, AIDraftProject, ConfirmAIProjectPayload, RegisterUserPayload, CreateProjectPayload, UpdateProjectPayload } from '../types/api';
 
 export const adminService = {
   // Fetch Users
@@ -15,13 +15,13 @@ export const adminService = {
   },
 
   // We will wire up the POST endpoints later when we build the forms
-  registerUser: async (userData: any) => {
-    const response = await api.post('/admin/users/register', userData);
+  registerUser: async (userData: RegisterUserPayload): Promise<UserDTO> => {
+    const response = await api.post<UserDTO>('/admin/users/register', userData);
     return response.data;
   },
 
-  createProject: async (projectData: any) => {
-    const response = await api.post('/admin/projects', projectData);
+  createProject: async (projectData: CreateProjectPayload): Promise<ProjectDTO> => {
+    const response = await api.post<ProjectDTO>('/admin/projects', projectData);
     return response.data;
   },
 
@@ -36,7 +36,7 @@ export const adminService = {
     return response.data;
   },
 
-  updateProject: async (projectId: string, projectData: any) => {
+  updateProject: async (projectId: string, projectData: UpdateProjectPayload) => {
     const response = await api.put<ProjectDTO>(`/admin/projects/${projectId}`, projectData);
     return response.data;
   },

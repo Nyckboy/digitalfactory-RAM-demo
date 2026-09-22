@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { adminService } from '../../lib/adminApi';
-import type { ProjectDTO, UserDTO } from '../../types/api';
+import type { ProjectDTO, ProjectStatus, UserDTO } from '../../types/api';
 
 interface EditProjectModalProps {
   isOpen: boolean;
@@ -12,7 +12,7 @@ interface EditProjectModalProps {
 export const EditProjectModal = ({ isOpen, project, onClose, onSuccess }: EditProjectModalProps) => {
   const [formData, setFormData] = useState({
     title: '',
-    status: 'DRAFT',
+    status: 'DRAFT' as ProjectStatus,
     supervisorId: '',
     internIds: [] as string[],
   });
@@ -90,7 +90,7 @@ export const EditProjectModal = ({ isOpen, project, onClose, onSuccess }: EditPr
 
           <div>
             <label className="block text-xs font-semibold text-on-surface mb-1">Status</label>
-            <select value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} className="w-full px-3 py-3 border border-outline-variant rounded-lg bg-[#F1F3F5] text-on-surface focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-colors text-sm">
+            <select value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value as ProjectStatus })} className="w-full px-3 py-3 border border-outline-variant rounded-lg bg-[#F1F3F5] text-on-surface focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-colors text-sm">
               <option value="DRAFT">Draft</option>
               <option value="ACTIVE">Active</option>
               <option value="ON_HOLD">On Hold</option>

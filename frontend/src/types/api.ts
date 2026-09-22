@@ -159,3 +159,24 @@ export interface ConfirmAIProjectPayload {
   supervisorId: string;
   internIds: string[];
 }
+
+export type ProjectStatus = ProjectDTO['status'];
+
+export interface RegisterUserPayload {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  role: UserRole;
+}
+
+export interface CreateProjectPayload {
+  title: string;
+  description: string;
+  supervisorId: string;
+  internIds: string[];
+}
+
+export interface UpdateProjectPayload extends Partial<CreateProjectPayload> {
+  status?: ProjectStatus;
+}

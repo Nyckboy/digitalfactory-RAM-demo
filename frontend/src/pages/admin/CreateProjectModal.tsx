@@ -53,7 +53,7 @@ export const CreateProjectModal = ({
             allUsers.filter((u) => u.role === "SUPERVISOR" && u.isActive),
           );
           setInterns(allUsers.filter((u) => u.role === "INTERN" && u.isActive));
-        } catch (err) {
+      } catch {
           setError("Could not load users. Please close and try again.");
         } finally {
           setIsFetchingUsers(false);
