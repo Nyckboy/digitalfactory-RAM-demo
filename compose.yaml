@@ -1,0 +1,9 @@
+services:
+  digitalfactory-demo:
+    container_name: digitalfactory-demo
+    build:
+      context: ./frontend
+    image: digitalfactory-demo:latest
+    ports:
+      - "${DIGITALFACTORY_PORT:-3003}:80"
+    restart: unless-stopped

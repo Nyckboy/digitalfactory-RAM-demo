@@ -3,13 +3,13 @@ pipeline {
     agent any
     options { disableConcurrentBuilds() }
     parameters {
-        choice(name: 'ACTION', choices: ['BUILD', 'STOP', 'START'],
-               description: 'Build the static demo, or control its separately provisioned container.')
+        choice(name: 'ACTION', choices: ['BUILD', 'DEPLOY', 'STOP', 'START'],
+               description: 'Build/test the demo, deploy it with Docker Compose, or control its existing container.')
     }
     environment { DEMO_CONTAINER = 'digitalfactory-demo' }
     stages {
         stage('Build Demo') {
-            when { expression { (params.ACTION ?: 'BUILD') == 'BUILD' } }
+            when { expression { (params.ACTION ?: 'BUILD') in ['BUILD', 'DEPLOY'] } }
             tools { nodejs 'Node22' }
             steps {
                 dir('frontend') {
@@ -18,6 +18,13 @@ pipeline {
                     sh 'pnpm build'
                 }
                 archiveArtifacts artifacts: 'frontend/dist/**', fingerprint: true
+            }
+        }
+        stage('Deploy Demo') {
+            when { expression { params.ACTION == 'DEPLOY' } }
+            steps {
+                sh 'docker compose up -d --build'
+                sh 'docker compose ps --status running'
             }
         }
         stage('Control Demo') {

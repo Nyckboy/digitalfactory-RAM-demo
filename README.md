@@ -43,7 +43,7 @@ pnpm test
 pnpm build
 ```
 
-Publish `frontend/dist` using a static host. Configure an SPA fallback to `index.html` for deep links; a Netlify-style `_redirects` file is included. No API credentials or backend service are required. The existing frontend Dockerfile can also package a prebuilt `dist` with the demo Nginx configuration.
+Publish `frontend/dist` using a static host. Configure an SPA fallback to `index.html` for deep links; a Netlify-style `_redirects` file is included. No API credentials or backend service are required. The included Docker Compose setup builds and hosts the frontend container; see [the VPS deployment guide](docs/vps-deployment.md).
 
 No public site has been deployed yet.
 
@@ -51,9 +51,9 @@ No public site has been deployed yet.
 
 Create a **separate** job for this repository. The pipeline defaults to `BUILD` and archives the static build. Configure a NodeJS tool named `Node22` providing Node 22.18+ and pnpm.
 
-`START` and `STOP` control only an already-provisioned container named `digitalfactory-demo` on that agent's Docker host. They never target the full app's `backend` or `frontend` containers. The job does not provision or deploy a container automatically; select the hosting method first. If the job uses several agents, pin it to the one running the demo container.
+Select `DEPLOY` to test the demo and run `docker compose up -d --build`, creating or replacing only the `digitalfactory-demo` container on that agent's Docker host. It publishes port 3003 by default (configure `DIGITALFACTORY_PORT` with the job environment if needed). `START` and `STOP` control that already-provisioned container. They never target the full app's `backend` or `frontend` containers. If the job uses several agents, pin it to the one running the demo container.
 
-The original app's Start/Stop helper is retained as historical source, but is not called by the demo pipeline.
+The Start/Stop helper is restricted to the `digitalfactory-demo` container and is used only by this separate demo pipeline.
 
 ## Verification
 
