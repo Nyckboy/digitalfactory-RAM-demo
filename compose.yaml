@@ -5,5 +5,5 @@ services:
       context: ./frontend
     image: digitalfactory-demo:latest
     ports:
-      - "${DIGITALFACTORY_PORT:-3003}:80"
+      - "127.0.0.1:${DIGITALFACTORY_PORT:-3003}:80"
     restart: unless-stopped

@@ -51,7 +51,7 @@ No public site has been deployed yet.
 
 Create a **separate** job for this repository. The pipeline defaults to `BUILD` and archives the static build. Configure a NodeJS tool named `Node22` providing Node 22.18+ and pnpm.
 
-Select `DEPLOY` to test the demo and run `docker compose up -d --build`, creating or replacing only the `digitalfactory-demo` container on that agent's Docker host. It publishes port 3003 by default (configure `DIGITALFACTORY_PORT` with the job environment if needed). `START` and `STOP` control that already-provisioned container. They never target the full app's `backend` or `frontend` containers. If the job uses several agents, pin it to the one running the demo container.
+Select `DEPLOY` to test the demo and run `docker compose up -d --build`, creating or replacing only the `digitalfactory-demo` container on that agent's Docker host. It listens on localhost port 3003 by default (configure `DIGITALFACTORY_PORT` with the job environment if needed), ready for a host Nginx reverse proxy. `START` and `STOP` control that already-provisioned container. They never target the full app's `backend` or `frontend` containers. If the job uses several agents, pin it to the one running the demo container.
 
 The Start/Stop helper is restricted to the `digitalfactory-demo` container and is used only by this separate demo pipeline.
 

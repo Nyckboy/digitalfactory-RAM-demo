@@ -12,7 +12,7 @@ docker compose up -d --build
 docker compose ps
 ```
 
-The site will be available at `http://YOUR_VPS_IP:3003` by default. To use another unused host port, set `DIGITALFACTORY_PORT` in `.env` before starting the container, then rerun `docker compose up -d`.
+The container listens only on `127.0.0.1:3003` by default, so it must be published through the host Nginx reverse proxy. To use another unused localhost port, set `DIGITALFACTORY_PORT` in `.env` before starting the container, then rerun `docker compose up -d`.
 
 Useful operations:
 
@@ -28,32 +28,23 @@ Create a Pipeline job from this repository and configure its agent to run on thi
 
 Run the job with `ACTION=DEPLOY`. Jenkins will run the tests, build the image, and execute `docker compose up -d --build`. The default `BUILD` action only validates and archives the static site; it does not deploy it.
 
-If your VPS firewall is enabled and you are accessing the port directly, allow the chosen TCP port (for example, `3003`). Do not expose the port publicly when using the reverse-proxy option below.
+Allow public TCP ports 80 and 443 through the VPS firewall. Do not open port 3003: it is private to the VPS.
 
 ## Put it behind your existing Nginx reverse proxy
 
-For a domain such as `demo.example.com`, keep the Compose service private to the VPS by changing its port mapping to:
+The Compose service already binds to localhost. The repository provides an isolated Nginx virtual host for `ramdemo.mouadabbassid.com` at `deploy/nginx/ramdemo.mouadabbassid.com.conf`. Install it as a new site, test Nginx, and reload only when the test passes:
 
-```yaml
-ports:
-  - "127.0.0.1:3003:80"
+```sh
+sudo cp deploy/nginx/ramdemo.mouadabbassid.com.conf /etc/nginx/sites-available/ramdemo.mouadabbassid.com
+sudo ln -s /etc/nginx/sites-available/ramdemo.mouadabbassid.com /etc/nginx/sites-enabled/ramdemo.mouadabbassid.com
+sudo nginx -t
+sudo systemctl reload nginx
 ```
 
-Then add this server block to the existing host-level Nginx configuration, replace the domain, and reload Nginx after obtaining a TLS certificate:
+Before requesting the certificate, create a DNS `A` record for `ramdemo.mouadabbassid.com` pointing to this VPS's public IPv4 address. Once it resolves, obtain and install HTTPS without touching your other sites:
 
-```nginx
-server {
-    listen 80;
-    server_name demo.example.com;
-
-    location / {
-        proxy_pass http://127.0.0.1:3003;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
+```sh
+sudo certbot --nginx -d ramdemo.mouadabbassid.com --redirect
 ```
 
 The app is a single-page app, and its container Nginx configuration already routes deep links to `index.html`.
